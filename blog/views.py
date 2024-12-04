@@ -3,7 +3,7 @@ from django.http import Http404
 from .models import Post
 
 # Pagination
-from django.core.paginator import Paginator, EmptyPage
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 # Create your views here.
 
 def post_list(request):
@@ -13,6 +13,8 @@ def post_list(request):
     page_number = request.GET.get('page',1)
     try:
         posts =paginator.page(page_number)
+    except PageNotAnInteger:
+        posts = paginator.page(1)
     except EmptyPage:
         # If page_number is out of range deliver last page of results
         posts = paginator.page(paginator.num_pages)
@@ -26,3 +28,12 @@ def post_detail(request,post,year,month,day):
                              publish__month=month,
                              publish__day=day)
     return render(request,'blog/post/detail.html',{'post':post})
+
+
+##alternative to view function is Class based view
+from django.views.generic import ListView
+class PostListView(ListView):
+    model = Post
+    context_object_name = 'posts'
+    paginate_by = 3
+    template_name = 'blog/post/list.html'
