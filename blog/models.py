@@ -3,8 +3,16 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 # Create your models here.
 
-class Post(models.Model):
+#model manager good
+class PublishedManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset()\
+        .filter(status=Post.Status.PUBLISHED)
 
+
+
+class Post(models.Model):
+    #inherit enum?
     class Status(models.TextChoices):
         DRAFT = 'DF', 'Draft'
         PUBLISHED  = 'PB', 'Published'
@@ -20,6 +28,11 @@ class Post(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     status  = models.CharField(max_length=2,choices=Status.choices, default=Status.DRAFT)
+
+    #model manager
+    objects = models.Manager() #default
+    published = PublishedManager() #my custome manager
+
 
     class Meta:
         ordering = ['-publish']
