@@ -1,3 +1,4 @@
+from .forms import EmailPostForm, CommentForm
 from django.shortcuts import render, get_object_or_404
 from django.http import Http404
 from .models import Post,Comment
@@ -28,7 +29,10 @@ def post_detail(request,post,year,month,day):
                              publish__year=year,
                              publish__month=month,
                              publish__day=day)
-    return render(request,'blog/post/detail.html',{'post':post})
+    comments = post.comments.filter(active=True)
+    #form for users to comment
+    form = CommentForm()
+    return render(request,'blog/post/detail.html',{'post':post,'comments':comments,'form':form})
 
 
 ##alternative to view function is Class based view
@@ -40,7 +44,7 @@ class PostListView(ListView):
     template_name = 'blog/post/list.html'
 
 
-from .forms import EmailPostForm, CommentForm
+
 
 def post_share(request,post_id):
     #retrieve post by id
@@ -49,8 +53,7 @@ def post_share(request,post_id):
     if request.method == 'POST':
         form = EmailPostForm(request.POST)
         if form.is_valid():
-            cd = form.cleaned_data 
-            #only clean the incorrect camp
+            cd = form.cleaned_data
             #sending email
             post_url = request.build_absolute_uri(
                 post.get_absolute_url())
