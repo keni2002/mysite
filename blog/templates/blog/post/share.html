@@ -10,9 +10,15 @@
     
     {% else %}
         <h1>Share "{{post.title}}" by e-mail</h1>
-        <form method="POST">
-            {{form.as_p}}
+        <form method="POST" novalidate>
+
             {% csrf_token %}
+            {% for field in form %}
+            <div>
+                {{ field.errors }}
+                {{ field.label_tag }} {{ field }}
+            </div>
+            {% endfor %}
             <input type="submit" value="Send e-mail"/>
         </form>
     {% endif %}
