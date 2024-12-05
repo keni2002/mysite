@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import Http404
-from .models import Post
+from .models import Post,Comment
 from django.core.mail import send_mail
 from mysite import settings
 # Pagination
@@ -40,7 +40,7 @@ class PostListView(ListView):
     template_name = 'blog/post/list.html'
 
 
-from .forms import EmailPostForm
+from .forms import EmailPostForm, CommentForm
 
 def post_share(request,post_id):
     #retrieve post by id
@@ -64,3 +64,20 @@ def post_share(request,post_id):
     else:
         form = EmailPostForm()
     return render(request, 'blog/post/share.html', {'post':post,'form':form,'sent':sent})
+
+
+from django.views.decorators.http import require_POST
+@require_POST
+def post_comment(request, post_id):
+    post = get_object_or_404(Post, id=post_id, status=Post.Status.PUBLISHED)
+    comment = None
+    #a comment was posted
+    form = CommentForm(data=request.POST)
+    if form.is_valid():
+        # Create a Comment object without saving it to the database
+        comment = form.save(commit=False)
+         # Assign the post to the comment
+        comment.post  = post
+        #save
+        comment.save()
+    return render(request, 'blog/post/comment.html', {'post':post,'form':form,'comment':comment})
