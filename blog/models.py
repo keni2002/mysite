@@ -2,6 +2,9 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.urls import reverse
+from taggit.managers import TaggableManager
+
+
 # Create your models here.
 
 #model manager good
@@ -13,11 +16,14 @@ class PublishedManager(models.Manager):
 
 
 class Post(models.Model):
+    tags = TaggableManager()
     #inherit enum?
     class Status(models.TextChoices):
         DRAFT = 'DF', 'Draft'
         PUBLISHED  = 'PB', 'Published'
         #names     values   labels
+
+
 
     title = models.CharField(max_length=250)
     slug = models.SlugField(max_length=250, unique_for_date='publish')
