@@ -1,8 +1,10 @@
-from .forms import EmailPostForm, CommentForm
+from .forms import EmailPostForm, CommentForm, SearchForm
+from django.views.decorators.http import require_POST,require_GET
 from django.shortcuts import render, get_object_or_404
 from django.http import Http404
 from .models import Post,Comment
 from django.core.mail import send_mail
+from django.contrib.postgres.search import SearchVector
 from mysite import settings
 from taggit.models import Tag
 # Pagination
@@ -18,7 +20,7 @@ def post_list(request,tag_slug=None):
         tag = get_object_or_404(Tag, slug=tag_slug)
         post_list = post_list.filter(tags__in=[tag])
     paginator = Paginator(post_list, 3)
-    page_number = request.GET.get('page',1)
+    page_number = request.GET.get('page',1) # key,default
     try:
         posts =paginator.page(page_number)
     except PageNotAnInteger:
@@ -83,7 +85,7 @@ def post_share(request,post_id):
     return render(request, 'blog/post/share.html', {'post':post,'form':form,'sent':sent})
 
 
-from django.views.decorators.http import require_POST
+
 @require_POST
 def post_comment(request, post_id):
     post = get_object_or_404(Post, id=post_id, status=Post.Status.PUBLISHED)
@@ -98,3 +100,17 @@ def post_comment(request, post_id):
         #save
         comment.save()
     return render(request, 'blog/post/comment.html', {'post':post,'form':form,'comment':comment})
+
+def post_search(request):
+    form = SearchForm
+    query = None
+    results = []
+    if 'query' in request.GET:
+        form  = SearchForm(request.GET)
+        if form.is_valid():
+            query = form.cleaned_data['query']
+            results = Post.published.annotate(search=SearchVector('title','body'),).filter(search=query)
+
+    return render(request,'blog/post/search.html',{'form':form,
+                                                       'query':query,
+                                                       'results':results})

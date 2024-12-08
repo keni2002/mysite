@@ -6,6 +6,10 @@ class EmailPostForm(forms.Form):
     to = forms.EmailField()
     comments = forms.CharField(required=False, widget=forms.Textarea)
 
+class SearchForm(forms.Form):
+    query = forms.CharField()
+
+#this kind of form is useful for create form from the model
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
