@@ -49,6 +49,10 @@ Follow these instructions to set up and run the project locally.
    pip install -r requirements.txt
    ```
 
+   ```sh
+   docker run --name psycopg -p 5432:5432 -e POSTGRES_PASSWORD=<pass>  -d postgres
+   ```
+
 4. **Apply migrations**:
    ```sh
    python manage.py migrate
